@@ -1,0 +1,45 @@
+
+.btn.btn-toolbar.btn-view-on-github {
+  &:only-of-type {
+    margin-right: 0;
+  }
+}
+
+.btn.github-issue-status {
+  color: white;
+  margin-right: 5px;
+  &.github-issue-status-open {
+    background: green;
+  }
+  &.github-issue-status-closed {
+    background: red;
+  }
+}
+.github-issue-status {
+  margin-bottom: 5px;
+}
+
+// preferences styles
+
+.container-github {
+  width: 40%;
+  min-width: 460px;
+  margin: 0 auto;
+}
+.github-intro {
+  color: #757575;
+  font-size: 12px;
+}
+.github-settings-section {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+
+  tr:not(:last-child) td {
+    padding-bottom: 10px;
+  }
+
+  tr td:first-child {
+    width: 150px;
+  }
+}
