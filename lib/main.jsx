@@ -75,9 +75,12 @@ export function activate() {
   ComponentRegistry.register(GitHubStatus, {
     role: 'MessageListHeaders',
   });
+  ComponentRegistry.register(GitHubStatus, {
+    role: 'Thread:MailLabel',
+  });
 }
 
 export function deactivate() {
   PreferencesUIStore.unregisterPreferencesTab(preferencesTab);
-  ComponentRegistry.unregister(ViewOnGithubButton);
+  ComponentRegistry.unregister(GitHubStatus);
 }

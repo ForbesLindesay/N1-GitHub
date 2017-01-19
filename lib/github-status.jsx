@@ -1,37 +1,89 @@
 import {shell} from 'electron'
-import {Actions, React} from 'nylas-exports'
+import {Actions, React, DatabaseStore, Message} from 'nylas-exports'
 import {RetinaImg, KeyCommandsRegion} from 'nylas-component-kit'
 import github from 'github-basic';
+import {findGitHubLink, parseLink, isRelevantThread} from './utils';
 
 import GithubStore from './github-store'
 import GitHubPreferencesStore from './github-preferences-store';
 
+function loadMessages(thread) {
+  // TODO: try using findBy to return just one message
+  const query = DatabaseStore.findAll(Message);
+  query.where({threadId: thread.id});
+  query.include(Message.attributes.body);
+  return query.then(messages => {
+    for (let i = 0; i < messages.length; i++) {
+      const link = findGitHubLink(messages[i]);
+      if (link) {
+        return link;
+      }
+    }
+    return null;
+  });
+}
 export default class GitHubStatus extends React.Component {
   static displayName = "GitHubStatus"
 
+  static propTypes: {
+    thread: React.PropTypes.object,
+  };
+
   constructor(props) {
     super(props)
-    this.state = this._getStateFromStores()
+    if (props.thread) {
+      this.state = this._getStateFromProps(props);
+    } else {
+      this.state = this._getStateFromStores();
+    }
   }
 
   componentDidMount() {
     this._unlisten = GithubStore.listen(this._onStoreChanged)
+  }
+  componentWillReceiveProps(props) {
+    if (props.thread) {
+      this.setState(this._getStateFromProps(props));
+    }
   }
 
   componentWillUnmount() {
     this._unlisten()
   }
 
+
   _onStoreChanged = () => {
-    this.setState(this._getStateFromStores())
+    if (!this.props.thread) {
+      this.setState(this._getStateFromStores());
+    }
   }
 
   _getStateFromStores() {
     const link = GithubStore.link();
+    return this._getStateFromLink(link);
+  }
+  _getStateFromProps(props) {
+    if (this._threadID && props.thread.id === this._threadID) {
+      return this.state;
+    }
+    this._threadID = props.thread.id;
+    if (isRelevantThread(props.thread.participants)) {
+      const threadID = props.thread.id;
+      loadMessages(props.thread).then(link => {
+        if (this.props.thread && this.props.thread.id === threadID) {
+          this.setState(this._getStateFromLink(link));
+        }
+      }).catch(ex => {
+        setTimeout(() => { throw ex; }, 0);
+      });
+    }
+    return {link: null, info: null, status: null};
+  }
+  _getStateFromLink(link) {
     if (this.state && this.state.link === link) {
       return this.state;
     }
-    const info = GithubStore.info();
+    const info = parseLink(link);
     if (info) {
       // Intentionally not subscribing to the access token
       const accessToken = GitHubPreferencesStore.accessToken();
