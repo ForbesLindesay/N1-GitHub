@@ -4,7 +4,6 @@ import {RetinaImg, KeyCommandsRegion} from 'nylas-component-kit'
 import github from 'github-basic';
 import {findGitHubLink, parseLink, isRelevantThread} from './utils';
 
-import GithubStore from './github-store'
 import GitHubPreferencesStore from './github-preferences-store';
 
 function loadMessages(thread) {
@@ -31,15 +30,11 @@ export default class GitHubStatus extends React.Component {
 
   constructor(props) {
     super(props)
-    if (props.thread) {
-      this.state = this._getStateFromProps(props);
-    } else {
-      this.state = this._getStateFromStores();
-    }
+    this.state = {};
   }
 
   componentDidMount() {
-    this._unlisten = GithubStore.listen(this._onStoreChanged)
+    this.setState(this._getStateFromProps(this.props));
   }
   componentWillReceiveProps(props) {
     if (props.thread) {
@@ -47,21 +42,6 @@ export default class GitHubStatus extends React.Component {
     }
   }
 
-  componentWillUnmount() {
-    this._unlisten()
-  }
-
-
-  _onStoreChanged = () => {
-    if (!this.props.thread) {
-      this.setState(this._getStateFromStores());
-    }
-  }
-
-  _getStateFromStores() {
-    const link = GithubStore.link();
-    return this._getStateFromLink(link);
-  }
   _getStateFromProps(props) {
     if (this._threadID && props.thread.id === this._threadID) {
       return this.state;

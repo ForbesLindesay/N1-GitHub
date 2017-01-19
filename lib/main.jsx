@@ -59,7 +59,7 @@ function addPreferencesTabIcon() {
   [1, 2].forEach(function(iconSize) {
     const iconName = `icon-preferences-${DISPLAY_NAME.toLowerCase().replace(' ', '-')}@${iconSize}x.png`;
     // TODO: actually provide a 2x and 1x version of this image, and copy the style used in other images
-    cachedImageDataJSON[resourcePath][iconName] = path.join(pluginPath, `../assets/github@2x.png`);
+    cachedImageDataJSON[resourcePath][iconName] = path.join(pluginPath, `../icon.png`);
   });
 
   NylasEnv.fileListCache().imageData = JSON.stringify(cachedImageDataJSON);
